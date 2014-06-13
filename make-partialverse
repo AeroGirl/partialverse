@@ -2,7 +2,7 @@
 
 export PS4='+($(basename $0):${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 set -e
-#set -x
+set -x
 
 aptly() {
   ./bin/aptly -config=aptly.conf $@
@@ -41,6 +41,8 @@ for remote in remotes/*; do
   aptly publish repo -distribution="${COMPONENT}" ${REPO_NAME}
 done
 
+
+echo "--- Uploading resulting repository data"
 ls -lah rootdir/public
 
 if [ ! -z $PARTIALVERSE_PUSH_S3_BUCKET ]; then
