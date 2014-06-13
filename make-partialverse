@@ -42,3 +42,14 @@ for remote in remotes/*; do
 done
 
 ls -lah rootdir/public
+
+if [ ! -z $PARTIALVERSE_PUSH_S3_BUCKET ]; then
+  s3cmd sync \
+    --no-progress \
+    --follow-symlinks \
+    --recursive \
+    --acl-public \
+    rootdir/public/ ${PARTIALVERSE_PUSH_S3_BUCKET}
+else
+  echo "PARTIALVERSE_PUSH_S3_BUCKET not configured, skipping"
+fi
