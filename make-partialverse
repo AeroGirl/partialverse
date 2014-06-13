@@ -1,0 +1,44 @@
+#!/bin/bash
+
+export PS4='+($(basename $0):${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+set -e
+#set -x
+
+aptly() {
+  ./bin/aptly -config=aptly.conf $@
+}
+
+echo "--- Cleaning existing repository"
+rm -rf rootdir
+
+TMP_PACKAGES_FILE="/tmp/Packages.$$"
+
+import-latest() {
+  PACKAGE_NAME=$1
+  PACKAGE_PATH=$(egrep "^Filename: .*/${PACKAGE_NAME}_[^/]+.deb" ${TMP_PACKAGES_FILE} | cut -d' ' -f 2)
+  PACKAGE_FILE=$(basename ${PACKAGE_PATH})
+
+  echo $PACKAGE_FILE
+
+  wget ${REPOSITORY}/${PACKAGE_PATH}
+  aptly repo add ${REPO_NAME} ${PACKAGE_FILE}
+  rm -rf ${PACKAGE_FILE}
+}
+
+for remote in remotes/*; do
+  . $remote
+  echo "--- Creating a new repository ${REPO_NAME}"
+  aptly repo create ${REPO_NAME}
+
+  curl "${REPOSITORY}/dists/${COMPONENT}/binary-${ARCH_NAME}/Packages.bz2" | gunzip > $TMP_PACKAGES_FILE
+
+  packages
+
+  rm -rf $TMP_PACKAGES_FILE
+
+  aptly repo show -with-packages ${REPO_NAME}
+
+  aptly publish repo -distribution="${COMPONENT}" ${REPO_NAME}
+done
+
+ls -lah rootdir/public
