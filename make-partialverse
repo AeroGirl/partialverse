@@ -30,7 +30,7 @@ for remote in remotes/*; do
   echo "--- Creating a new repository ${REPO_NAME}"
   aptly repo create ${REPO_NAME}
 
-  curl "${REPOSITORY}/dists/${COMPONENT}/binary-${ARCH_NAME}/Packages.bz2" | gunzip > $TMP_PACKAGES_FILE
+  curl "${REPOSITORY}/dists/${COMPONENT}/binary-${ARCH_NAME}/Packages.bz2" | bunzip2 > $TMP_PACKAGES_FILE
 
   packages
 
